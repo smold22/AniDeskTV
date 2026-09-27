@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Настройки</string>
+
+    <string name="settings_poster_quality">Качество постеров</string>
+    <string name="settings_poster_quality_low">Низкое</string>
+    <string name="settings_poster_quality_standard">Стандартное</string>
+    <string name="settings_poster_quality_mega">Mega</string>
+    <string name="settings_poster_quality_high">Высокое</string>
+
+    <string name="settings_poster_size">Размер карточек</string>
+    <string name="settings_poster_size_compact">Компактный</string>
+    <string name="settings_poster_size_standard">Стандартный</string>
+    <string name="settings_poster_size_large">Крупный</string>
+
+    <string name="settings_api">Сервер API</string>
+
+    <string name="settings_account">Аккаунт</string>
+    <string name="settings_logged_in">Авторизован: %1$s</string>
+    <string name="settings_auth_skipped_label">Вход пропущен</string>
+    <string name="settings_sign_in_prompt">Войдите в аккаунт Anixart</string>
+    <string name="settings_sign_in">Войти</string>
+    <string name="settings_sign_out">Выйти</string>
+    <string name="settings_skip_auth">Пропустить</string>
+
+    <string name="settings_login_title">Вход в Anixart</string>
+    <string name="settings_login_label">Логин</string>
+    <string name="settings_password_label">Пароль</string>
+    <string name="settings_login_progress">Выполняется вход…</string>
+    <string name="settings_cancel">Отмена</string>
+</resources>

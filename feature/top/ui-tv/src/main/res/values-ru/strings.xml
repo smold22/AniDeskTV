@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="top_type_all">Все</string>
+    <string name="top_sort_best">Лучшие</string>
+    <string name="top_sort_popular">Популярные</string>
+    <string name="top_sort_new">Новые</string>
+    <string name="top_sort_asc">По возрастанию</string>
+    <string name="top_sort_desc">По убыванию</string>
+    <string name="top_empty">Здесь пока пусто</string>
+    <string name="top_empty_description">Попробуйте изменить фильтры</string>
+</resources>

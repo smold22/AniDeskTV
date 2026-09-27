@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_rating" translatable="false">%1$s</string>
+    <string name="details_genres" translatable="false">%s</string>
+    <string name="details_year" translatable="false">%s</string>
+    <string name="details_country" translatable="false">%s</string>
+    <string name="details_description" translatable="false">%s</string>
+    <string name="details_dubber_section" translatable="false">Озвучка</string>
+    <string name="details_description_section" translatable="false">Описание</string>
+    <string name="details_source_section" translatable="false">Источник</string>
+    <string name="details_episodes_section" translatable="false">Серии</string>
+    <string name="details_no_episodes" translatable="false">Серии недоступны — выберите озвучку и источник</string>
+    <string name="details_episode_label" translatable="false">%1$d. %2$s</string>
+    <string name="details_watched_dot" translatable="false">просмотрено</string>
+</resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="schedule_day_monday">Понедельник</string>
+    <string name="schedule_day_tuesday">Вторник</string>
+    <string name="schedule_day_wednesday">Среда</string>
+    <string name="schedule_day_thursday">Четверг</string>
+    <string name="schedule_day_friday">Пятница</string>
+    <string name="schedule_day_saturday">Суббота</string>
+    <string name="schedule_day_sunday">Воскресенье</string>
+
+    <string name="schedule_day_short_monday">Пн</string>
+    <string name="schedule_day_short_tuesday">Вт</string>
+    <string name="schedule_day_short_wednesday">Ср</string>
+    <string name="schedule_day_short_thursday">Чт</string>
+    <string name="schedule_day_short_friday">Пт</string>
+    <string name="schedule_day_short_saturday">Сб</string>
+    <string name="schedule_day_short_sunday">Вс</string>
+
+    <string name="schedule_empty">В этот день пока ничего</string>
+    <string name="schedule_error">Не удалось загрузить расписание</string>
+    <string name="schedule_episodes_total">%1$d эпизодов</string>
+</resources>

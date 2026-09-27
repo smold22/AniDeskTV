@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_rating">%1$s</string>
+    <string name="details_genres">%s</string>
+    <string name="details_year">%s</string>
+    <string name="details_country">%s</string>
+    <string name="details_description">%s</string>
+    <string name="details_dubber_section">Озвучка</string>
+    <string name="details_description_section">Описание</string>
+    <string name="details_source_section">Источник</string>
+    <string name="details_episodes_section">Серии</string>
+    <string name="details_no_episodes">Серии недоступны — выберите озвучку и источник</string>
+    <string name="details_episode_label">%1$d. %2$s</string>
+    <string name="details_watched_dot">просмотрено</string>
+</resources>

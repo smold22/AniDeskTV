@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bookmarks_tab_history">История</string>
+    <string name="bookmarks_tab_watching">Смотрю</string>
+    <string name="bookmarks_tab_planned">В планах</string>
+    <string name="bookmarks_tab_completed">Просмотрено</string>
+    <string name="bookmarks_tab_on_hold">Отложено</string>
+    <string name="bookmarks_tab_dropped">Брошено</string>
+    <string name="bookmarks_empty_history">Начни что-нибудь смотреть — и это обязательно здесь сохранится</string>
+    <string name="bookmarks_empty_list">Список пуст</string>
+</resources>

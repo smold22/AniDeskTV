@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="genres_all">Все</string>
+    <string name="genres_empty">Здесь пока пусто</string>
+    <string name="genres_empty_description">Попробуйте выбрать другой жанр</string>
+</resources>

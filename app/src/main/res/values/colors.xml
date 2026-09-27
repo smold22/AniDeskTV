@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="player_accent">#8DCCFF</color>
+    <color name="player_red">#F04E4E</color>
+    <color name="player_background">#191B1C</color>
+    <color name="player_guided_background">#33000000</color>
+    <color name="player_dialog_button_normal">#3A3E40</color>
+    <color name="player_dialog_button_focused">#8DCCFF</color>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title" translatable="false">Настройки</string>
+
+    <string name="settings_poster_quality" translatable="false">Качество постеров</string>
+    <string name="settings_poster_quality_low" translatable="false">Низкое</string>
+    <string name="settings_poster_quality_standard" translatable="false">Стандартное</string>
+    <string name="settings_poster_quality_mega" translatable="false">Mega</string>
+    <string name="settings_poster_quality_high" translatable="false">Высокое</string>
+
+    <string name="settings_poster_size" translatable="false">Размер карточек</string>
+    <string name="settings_poster_size_compact" translatable="false">Компактный</string>
+    <string name="settings_poster_size_standard" translatable="false">Стандартный</string>
+    <string name="settings_poster_size_large" translatable="false">Крупный</string>
+
+    <string name="settings_api" translatable="false">Сервер API</string>
+
+    <string name="settings_account" translatable="false">Аккаунт</string>
+    <string name="settings_logged_in" translatable="false">Авторизован: %1$s</string>
+    <string name="settings_auth_skipped_label" translatable="false">Вход пропущен</string>
+    <string name="settings_sign_in_prompt" translatable="false">Войдите в аккаунт Anixart</string>
+    <string name="settings_sign_in" translatable="false">Войти</string>
+    <string name="settings_sign_out" translatable="false">Выйти</string>
+    <string name="settings_skip_auth" translatable="false">Пропустить</string>
+
+    <string name="settings_login_title" translatable="false">Вход в Anixart</string>
+    <string name="settings_login_label" translatable="false">Логин</string>
+    <string name="settings_password_label" translatable="false">Пароль</string>
+    <string name="settings_login_progress" translatable="false">Выполняется вход…</string>
+    <string name="settings_cancel" translatable="false">Отмена</string>
+</resources>

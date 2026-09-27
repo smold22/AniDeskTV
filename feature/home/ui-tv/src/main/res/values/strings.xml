@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_continue_watching">Продолжить просмотр</string>
+    <string name="home_watching">Сейчас смотрят</string>
+    <string name="home_recommendations">Рекомендации</string>
+    <string name="home_updates">Новое</string>
+    <string name="home_error">Не удалось загрузить главную</string>
+    <string name="home_continue_watching_episode_position">%1$d · %2$s</string>
+    <string name="home_remove_from_history">Удалить из истории</string>
+</resources>

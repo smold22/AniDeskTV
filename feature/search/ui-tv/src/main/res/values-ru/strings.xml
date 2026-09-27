@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_hint" translatable="false">Поиск аниме…</string>
+    <string name="search_empty" translatable="false">Ничего не найдено</string>
+    <string name="search_empty_description" translatable="false">Попробуйте изменить запрос</string>
+    <string name="search_results_selected_count" translatable="false">Найдено результатов</string>
+</resources>
