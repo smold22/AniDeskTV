@@ -28,4 +28,8 @@
     <string name="settings_password_label">Пароль</string>
     <string name="settings_login_progress">Выполняется вход…</string>
     <string name="settings_cancel">Отмена</string>
+    <string name="settings_theme">Тема оформления</string>
+    <string name="settings_theme_light">Светлая</string>
+    <string name="settings_theme_dark">Тёмная</string>
+
 </resources>

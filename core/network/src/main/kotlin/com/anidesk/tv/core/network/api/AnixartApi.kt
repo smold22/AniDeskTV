@@ -164,7 +164,32 @@ class AnixartApi(
     suspend fun profileList(type: Int, page: Int, sort: Int = 1): PageableResponse<Release> =
         apiGet("/profile/list/all/$type/$page", mapOf("sort" to sort.toString()))
 
+    suspend fun addToProfileList(type: Int, releaseId: Int) {
+        apiGet<Unit>("/profile/list/add/$type/$releaseId")
+    }
+
+    suspend fun removeFromProfileList(type: Int, releaseId: Int) {
+        apiGet<Unit>("/profile/list/delete/$type/$releaseId")
+    }
+
     suspend fun history(page: Int): PageableResponse<Release> = apiGet("/history/$page")
+
+    suspend fun deleteFromHistory(releaseId: Int) {
+        apiGet<Unit>("/history/delete/$releaseId")
+    }
+
+    // ---------- Избранное ----------
+
+    suspend fun addFavorite(releaseId: Int) {
+        apiGet<Unit>("/favorite/add/$releaseId")
+    }
+
+    suspend fun removeFavorite(releaseId: Int) {
+        apiGet<Unit>("/favorite/delete/$releaseId")
+    }
+
+    /** @param page 0-индексированная страница (в API страницы таких списков начинаются с 0). */
+    suspend fun favorites(page: Int): PageableResponse<Release> = apiGet("/favorite/all/$page")
 
     // ---------- Internals ----------
 

@@ -13,6 +13,7 @@ import com.anidesk.tv.core.model.release.ContinueWatchingEntry
 import com.anidesk.tv.core.model.settings.MainSettingsSnapshot
 import com.anidesk.tv.core.model.settings.PosterCardSize
 import com.anidesk.tv.core.model.settings.PosterQuality
+import com.anidesk.tv.core.model.settings.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -23,10 +24,14 @@ private val Context.settingsDataStore: DataStore<Preferences> by preferencesData
 /** Размер обложек по умолчанию, пока пользователь не выбрал свой в настройках. */
 private val DEFAULT_POSTER_CARD_SIZE = PosterCardSize.LARGE
 
+/** Тема по умолчанию, пока пользователь не выбрал свою в настройках. */
+private val DEFAULT_THEME_MODE = ThemeMode.DARK
+
 class SettingsStore(private val context: Context) {
 
     private val POSTER_QUALITY = intPreferencesKey("poster_quality")
     private val POSTER_CARD_SIZE = intPreferencesKey("poster_card_size")
+    private val THEME_MODE = intPreferencesKey("theme_mode")
 
     private val DEFAULT_QUALITY = intPreferencesKey("default_quality")
     private val AUTO_PLAY = booleanPreferencesKey("auto_play")
@@ -44,11 +49,16 @@ class SettingsStore(private val context: Context) {
     val posterCardSize: Flow<PosterCardSize> =
         context.settingsDataStore.data.map { PosterCardSize.entries.getOrElse(it[POSTER_CARD_SIZE] ?: DEFAULT_POSTER_CARD_SIZE.ordinal) { DEFAULT_POSTER_CARD_SIZE } }
 
+    /** Выбранный режим оформления: светлая или тёмная тема. */
+    val themeMode: Flow<ThemeMode> =
+        context.settingsDataStore.data.map { ThemeMode.entries.getOrElse(it[THEME_MODE] ?: DEFAULT_THEME_MODE.ordinal) { DEFAULT_THEME_MODE } }
+
     val mainSettingsSnapshot: Flow<MainSettingsSnapshot> =
         context.settingsDataStore.data.map {
             MainSettingsSnapshot(
                 posterQuality = it.let { prefs -> PosterQuality.entries.getOrElse(prefs[POSTER_QUALITY] ?: PosterQuality.STANDARD.ordinal) { PosterQuality.STANDARD } },
                 posterCardSize = it.let { prefs -> PosterCardSize.entries.getOrElse(prefs[POSTER_CARD_SIZE] ?: DEFAULT_POSTER_CARD_SIZE.ordinal) { DEFAULT_POSTER_CARD_SIZE } },
+                themeMode = it.let { prefs -> ThemeMode.entries.getOrElse(prefs[THEME_MODE] ?: DEFAULT_THEME_MODE.ordinal) { DEFAULT_THEME_MODE } },
             )
         }
 
@@ -58,6 +68,10 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setPosterCardSize(value: PosterCardSize) {
         context.settingsDataStore.edit { it[POSTER_CARD_SIZE] = value.ordinal }
+    }
+
+    suspend fun setThemeMode(value: ThemeMode) {
+        context.settingsDataStore.edit { it[THEME_MODE] = value.ordinal }
     }
 
     /** 0 = авто, 1080, 720, 480, 360 */

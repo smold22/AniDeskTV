@@ -36,6 +36,7 @@ class MainViewModel @Inject internal constructor(
                     copy(
                         posterQuality = snapshot.posterQuality,
                         posterCardSize = snapshot.posterCardSize,
+                        themeMode = snapshot.themeMode,
                     )
                 }
             }

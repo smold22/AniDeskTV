@@ -3,9 +3,12 @@ package com.anidesk.tv.core.designsystem.theme
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
@@ -74,21 +77,25 @@ private val LightOutline = Color(0xFF757575)
 @Composable
 fun AniDeskTvTheme(
     isTelevision: Boolean = true,
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val useTvTypography = isTelevision
     val palette = OceanPalette
-    val colorScheme = palette.toLightColorScheme(LightNeutralsWhite)
+    val colorScheme = if (darkTheme) {
+        palette.toDarkColorScheme()
+    } else {
+        palette.toLightColorScheme(LightNeutralsWhite)
+    }
 
-    // Иконки статус-бара и навигационной полосы: тёмные на светлом фоне.
+    // Иконки статус-бара и навигационной полосы: тёмные на светлом фоне, светлые на тёмном.
     val view = LocalView.current
     if (!view.isInEditMode) {
-        val lightBars = true
-        DisposableEffect(lightBars) {
+        DisposableEffect(darkTheme) {
             view.context.findActivity()?.window?.let { window ->
                 WindowCompat.getInsetsController(window, view).apply {
-                    isAppearanceLightStatusBars = lightBars
-                    isAppearanceLightNavigationBars = lightBars
+                    isAppearanceLightStatusBars = !darkTheme
+                    isAppearanceLightNavigationBars = !darkTheme
                 }
             }
             onDispose { }
@@ -98,8 +105,14 @@ fun AniDeskTvTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = if (useTvTypography) YummyTvTypography else YummyMobileTypography,
-        content = content,
-    )
+    ) {
+        // Дефолт LocalContentColor в Material3 — чёрный: на светлой теме это совпадало с фоном,
+        // а на тёмной давало нечитаемый текст. Заголовки и подписи, не задающие цвет явно,
+        // берут его отсюда; M3-компоненты (Surface, Card, Button) переопределяют его сами.
+        CompositionLocalProvider(LocalContentColor provides colorScheme.onBackground) {
+            content()
+        }
+    }
 }
 
 private tailrec fun Context.findActivity(): Activity? = when (this) {
@@ -107,6 +120,39 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is ContextWrapper -> baseContext.findActivity()
     else -> null
 }
+
+/** Тёмная схема: тёмные нейтрали палитры плюс светлый акцент (читается на тёмном фоне). */
+private fun YummyTvPalette.toDarkColorScheme() = darkColorScheme(
+    background = background,
+    onBackground = onBackground,
+    surface = surface,
+    onSurface = onBackground,
+    surfaceVariant = surfaceVariant,
+    onSurfaceVariant = onSurfaceVariant,
+    primary = primary,
+    onPrimary = onPrimary,
+    primaryContainer = primaryContainer,
+    onPrimaryContainer = onPrimaryContainer,
+    secondary = secondary,
+    onSecondary = onPrimary,
+    // Акцентная «таблетка» выделения (напр. активная вкладка нижнего меню) несёт оттенок палитры.
+    secondaryContainer = primaryContainer,
+    onSecondaryContainer = onPrimaryContainer,
+    tertiary = primaryContainer,
+    onTertiary = onPrimaryContainer,
+    tertiaryContainer = primaryContainer,
+    onTertiaryContainer = onPrimaryContainer,
+    error = error,
+    onError = onError,
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+    outline = outline,
+    outlineVariant = surfaceVariant,
+    scrim = Color.Black,
+    inverseSurface = onBackground,
+    inverseOnSurface = surface,
+    inversePrimary = primary,
+)
 
 private fun YummyTvPalette.toLightColorScheme(neutrals: LightNeutrals) = lightColorScheme(
     background = neutrals.background,

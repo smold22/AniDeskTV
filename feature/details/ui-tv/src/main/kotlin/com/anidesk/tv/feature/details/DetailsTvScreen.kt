@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,19 +43,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.anidesk.tv.core.designsystem.components.GlobalToastOverlay
 import com.anidesk.tv.core.designsystem.dimensions.TvCardSpacing
 import com.anidesk.tv.core.designsystem.dimensions.TvScreenPadding
 import com.anidesk.tv.core.designsystem.dimensions.currentTvTitleCardDimensions
 import com.anidesk.tv.core.designsystem.focus.requestFocusUntilTimeout
 import com.anidesk.tv.core.designsystem.focus.tvFocusableClick
 import com.anidesk.tv.core.designsystem.locals.LocalPreferredContentFocusRequester
+import com.anidesk.tv.core.designsystem.theme.AniDeskSemanticColors
+import com.anidesk.tv.core.designsystem.tv.TvActionButton
 import com.anidesk.tv.core.designsystem.tv.TvChip
 import com.anidesk.tv.core.designsystem.tv.TvLoadingScreen
 import com.anidesk.tv.core.designsystem.tv.TvStateContent
+import com.anidesk.tv.core.model.release.BookmarkStatus
 import com.anidesk.tv.core.network.dto.Episode
 import com.anidesk.tv.core.network.dto.Release
 import com.anidesk.tvfeature.details.uitv.R
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+
+/** Сколько висит уведомление о результате действия со списками. */
+private const val TOAST_MILLIS = 2_500L
 
 @Composable
 fun DetailsTvScreen(
@@ -69,6 +79,8 @@ fun DetailsTvScreen(
             registerPreferredContentFocusRequester?.invoke(null)
         }
     }
+
+    val toast = rememberToast(effect)
 
     val dubbers = state.dubbers
     val sources = state.sources
@@ -101,6 +113,16 @@ fun DetailsTvScreen(
                     state = state,
                     contentFocusRequester = contentFocusRequester,
                 )
+            }
+
+            // Закладки и избранное — серверные списки аккаунта, без входа их не существует.
+            if (state.isAuthorized) {
+                item(key = "library") {
+                    LibraryRow(
+                        state = state,
+                        onEvent = onEvent,
+                    )
+                }
             }
 
             val release = state.release
@@ -196,6 +218,113 @@ fun DetailsTvScreen(
                         onClick = { onEvent(DetailsState.Event.EpisodeSelected(episode)) },
                     )
                 }
+            }
+        }
+    }
+
+    GlobalToastOverlay(text = toast)
+}
+
+/**
+ * Подписка на одноразовые [DetailsState.Effect] с автоскрытием: текст уведомления
+ * резолвится в composable-теле, потому что [stringResource] нельзя вызывать из
+ * корутины [LaunchedEffect].
+ */
+@Composable
+private fun rememberToast(effect: Flow<DetailsState.Effect>): String? {
+    var pending by remember { mutableStateOf<DetailsState.Effect?>(null) }
+    LaunchedEffect(effect) {
+        effect.collect { pending = it }
+    }
+    LaunchedEffect(pending) {
+        if (pending == null) return@LaunchedEffect
+        delay(TOAST_MILLIS)
+        pending = null
+    }
+    return when (val current = pending) {
+        is DetailsState.Effect.BookmarkAdded -> stringResource(
+            R.string.details_bookmark_added,
+            bookmarkStatusLabel(current.status),
+        )
+
+        DetailsState.Effect.BookmarkRemoved -> stringResource(R.string.details_bookmark_removed)
+
+        is DetailsState.Effect.FavoriteChanged -> stringResource(
+            if (current.isFavorite) R.string.details_favorite_added else R.string.details_favorite_removed,
+        )
+
+        DetailsState.Effect.LibraryActionFailed -> stringResource(R.string.details_library_action_failed)
+
+        null -> null
+    }
+}
+
+/** Название списка закладок, [BookmarkStatus.NONE] — «без закладки». */
+@Composable
+private fun bookmarkStatusLabel(status: BookmarkStatus): String = stringResource(
+    when (status) {
+        BookmarkStatus.NONE -> R.string.details_bookmark_none
+        BookmarkStatus.WATCHING -> R.string.details_bookmark_watching
+        BookmarkStatus.PLANNED -> R.string.details_bookmark_planned
+        BookmarkStatus.COMPLETED -> R.string.details_bookmark_completed
+        BookmarkStatus.ON_HOLD -> R.string.details_bookmark_on_hold
+        BookmarkStatus.DROPPED -> R.string.details_bookmark_dropped
+    },
+)
+
+/**
+ * Блок действий над списками аккаунта: кнопка «Избранное» со счётчиком и ряд чипов
+ * со статусами закладки. На TV вместо выпадающего списка статус выбирается сразу —
+ * списки у тайтла взаимоисключающие, поэтому активен всегда ровно один чип.
+ */
+@Composable
+private fun LibraryRow(
+    state: DetailsState.State,
+    onEvent: (DetailsState.Event) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TvActionButton(
+                text = stringResource(R.string.details_favorites_action),
+                icon = if (state.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                active = state.isFavorite,
+                activeTint = AniDeskSemanticColors.StatusFavorite,
+                onClick = { onEvent(DetailsState.Event.FavoriteClicked) },
+            )
+            if (state.favoritesCount > 0) {
+                Text(
+                    text = state.favoritesCount.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        Text(
+            text = stringResource(R.string.details_bookmarks_section),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
+        ) {
+            BookmarkStatus.entries.forEach { status ->
+                TvChip(
+                    label = bookmarkStatusLabel(status),
+                    selected = state.bookmarkStatus == status,
+                    onClick = { onEvent(DetailsState.Event.BookmarkStatusSelected(status)) },
+                )
             }
         }
     }

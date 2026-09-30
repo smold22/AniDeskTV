@@ -17,6 +17,9 @@ import com.anidesk.tv.feature.genres.IGenresNavigator
 import com.anidesk.tv.feature.genres.tv.navigator.GenresNavRegistrar
 import com.anidesk.tv.feature.bookmarks.IBookmarksNavigator
 import com.anidesk.tv.feature.bookmarks.tv.navigator.BookmarksNavRegistrar
+import com.anidesk.tv.feature.favorites.IFavoritesNavigator
+import com.anidesk.tv.feature.favorites.navigator.FavoritesNavigator
+import com.anidesk.tv.feature.favorites.tv.navigator.FavoritesNavRegistrar
 import com.anidesk.tv.feature.home.IHomeNavigator
 import com.anidesk.tv.feature.home.tv.navigator.HomeNavRegistrar
 
@@ -77,6 +80,10 @@ interface TvNavigationModule {
 
     @Binds
     @Singleton
+    fun bindFavoritesNavigator(impl: FavoritesNavigator): IFavoritesNavigator
+
+    @Binds
+    @Singleton
     fun bindScheduleNavigator(
         impl: com.anidesk.tv.feature.schedule.navigator.ScheduleNavigator,
     ): IScheduleNavigator
@@ -120,6 +127,11 @@ interface TvNavigationModule {
     @Binds
     @IntoSet
     @TvUi
+    fun bindTvFavoritesNavRegistrar(impl: FavoritesNavRegistrar): NavRegistrar
+
+    @Binds
+    @IntoSet
+    @TvUi
     fun bindTvScheduleNavRegistrar(impl: ScheduleNavRegistrar): NavRegistrar
 
     @Binds
@@ -139,6 +151,7 @@ interface TvNavigationModule {
             topNav: ITopNavigator,
             genresNav: IGenresNavigator,
             bookmarksNav: IBookmarksNavigator,
+            favoritesNav: IFavoritesNavigator,
             settingsNav: ISettingsNavigator,
         ): @JvmSuppressWildcards Map<RootTab, NavKey> = mapOf(
             RootTab.SEARCH to searchNav.getSearchDest(),
@@ -147,6 +160,7 @@ interface TvNavigationModule {
             RootTab.TOP to topNav.getTopDest(),
             RootTab.GENRES to genresNav.getGenresDest(),
             RootTab.BOOKMARKS to bookmarksNav.getBookmarksDest(),
+            RootTab.FAVORITES to favoritesNav.getFavoritesDest(),
             RootTab.SETTINGS to settingsNav.getSettingsDest(),
         )
     }

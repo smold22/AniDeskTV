@@ -11,3 +11,4 @@ captures/
 *.apk
 *.aab
 mapping.txt
+/app/release/

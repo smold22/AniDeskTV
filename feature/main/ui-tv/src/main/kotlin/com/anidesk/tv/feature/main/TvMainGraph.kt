@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -25,6 +26,7 @@ import com.anidesk.tv.core.designsystem.locals.LocalIsOffline
 import com.anidesk.tv.core.designsystem.locals.LocalPosterCardSize
 import com.anidesk.tv.core.designsystem.locals.LocalPosterQuality
 import com.anidesk.tv.core.designsystem.theme.AniDeskTvTheme
+import com.anidesk.tv.core.model.settings.ThemeMode
 import com.anidesk.tv.core.navigation.host.AppNavHost
 import com.anidesk.tv.core.navigation.manager.INavigationManager
 import com.anidesk.tv.core.navigation.registrar.NavRegistrar
@@ -50,7 +52,7 @@ class TvMainGraph @Inject constructor(
 
     @Composable
     private fun rememberMenuItems(): List<TvMenuItem> {
-        // «Закладки» видны только после входа в аккаунт — они требуют токен.
+        // «Закладки» и «Избранное» видны только после входа в аккаунт — они требуют токен.
         val token by sessionStore.token
             .collectAsStateWithLifecycle(initialValue = null)
         return buildList {
@@ -61,6 +63,7 @@ class TvMainGraph @Inject constructor(
             add(TvMenuItem(R.string.main_tab_genres, RootTab.GENRES, Icons.Default.Category))
             if (token != null) {
                 add(TvMenuItem(R.string.main_tab_bookmarks, RootTab.BOOKMARKS, Icons.Filled.Bookmarks))
+                add(TvMenuItem(R.string.main_tab_favorites, RootTab.FAVORITES, Icons.Filled.Favorite))
             }
         }
     }
@@ -80,6 +83,7 @@ class TvMainGraph @Inject constructor(
 
             AniDeskTvTheme(
                 isTelevision = true,
+                darkTheme = state.themeMode == ThemeMode.DARK,
             ) {
                 CompositionLocalProvider(
                     LocalPosterQuality provides state.posterQuality,

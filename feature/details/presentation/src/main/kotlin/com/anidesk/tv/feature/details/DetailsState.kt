@@ -1,5 +1,6 @@
 package com.anidesk.tv.feature.details
 
+import com.anidesk.tv.core.model.release.BookmarkStatus
 import com.anidesk.tv.core.mvi.UiEffect
 import com.anidesk.tv.core.mvi.UiEvent
 import com.anidesk.tv.core.mvi.UiState
@@ -22,6 +23,16 @@ class DetailsState {
         val isLoading: Boolean = false,
         val isEpisodesLoading: Boolean = false,
         val error: String? = null,
+        /** Есть ли аккаунт: закладки и избранное живут на сервере и требуют токен. */
+        val isAuthorized: Boolean = false,
+        /** Тайтл в избранном текущего пользователя. */
+        val isFavorite: Boolean = false,
+        /** Сколько человек отметили тайтл избранным (счётчик с сервера, а не «моё» состояние). */
+        val favoritesCount: Int = 0,
+        /** Статус пользовательского списка, в котором лежит тайтл. */
+        val bookmarkStatus: BookmarkStatus = BookmarkStatus.NONE,
+        /** Идёт запрос к спискам закладок/избранного — блокирует повторное нажатие. */
+        val isLibraryUpdating: Boolean = false,
     ) : UiState
 
     sealed class Event : UiEvent {
@@ -31,8 +42,26 @@ class DetailsState {
 
         data class EpisodeSelected(val episode: Episode) : Event()
 
+        /** Переключить тайтл в избранном. */
+        data object FavoriteClicked : Event()
+
+        /** Добавить тайтл в выбранный список закладок или убрать из него ([BookmarkStatus.NONE]). */
+        data class BookmarkStatusSelected(val status: BookmarkStatus) : Event()
+
         data object Retry : Event()
     }
 
-    sealed class Effect : UiEffect
+    sealed class Effect : UiEffect {
+        /** Короткое уведомление поверх экрана: тайтл добавлен в список [status]. */
+        data class BookmarkAdded(val status: BookmarkStatus) : Effect()
+
+        /** Короткое уведомление: тайтл убран из списка закладок. */
+        data object BookmarkRemoved : Effect()
+
+        /** Короткое уведомление: избранное переключено на [isFavorite]. */
+        data class FavoriteChanged(val isFavorite: Boolean) : Effect()
+
+        /** Не удалось изменить закладки/избранное — состояние откатилось. */
+        data object LibraryActionFailed : Effect()
+    }
 }

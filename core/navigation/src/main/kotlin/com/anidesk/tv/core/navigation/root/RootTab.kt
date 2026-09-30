@@ -7,5 +7,6 @@ enum class RootTab {
     GENRES,
     TOP,
     BOOKMARKS,
+    FAVORITES,
     SETTINGS,
 }

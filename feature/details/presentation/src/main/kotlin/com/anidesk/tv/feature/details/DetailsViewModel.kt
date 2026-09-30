@@ -1,11 +1,13 @@
 package com.anidesk.tv.feature.details
 
+import com.anidesk.tv.core.model.release.BookmarkStatus
 import com.anidesk.tv.core.model.release.ContinueWatchingEntry
 import com.anidesk.tv.core.mvi.BaseViewModel
 import com.anidesk.tv.core.network.di.AnixartApiProvider
 import com.anidesk.tv.core.network.dto.Episode
 import com.anidesk.tv.core.navigation.manager.INavigationManager
 import com.anidesk.tv.core.navigation.player.IPlayerLauncher
+import com.anidesk.tv.core.preferences.session.SessionStore
 import com.anidesk.tv.core.preferences.settings.SettingsStore
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -22,6 +24,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     @Assisted("title") private val seedTitle: String?,
     private val apiProvider: AnixartApiProvider,
     private val settingsStore: SettingsStore,
+    private val sessionStore: SessionStore,
     private val playerLauncher: IPlayerLauncher,
     private val nav: INavigationManager,
 ) : BaseViewModel<DetailsState.State, DetailsState.Event, DetailsState.Effect>() {
@@ -41,6 +44,14 @@ class DetailsViewModel @AssistedInject internal constructor(
     )
 
     init {
+        // Закладки и избранное — серверные списки аккаунта: держим токен в API-синглтоне
+        // актуальным при каждом входе/выходе и по нему же решаем, показывать ли кнопки.
+        viewModelScope.launch {
+            sessionStore.token.collect { token ->
+                apiProvider.refreshFromSettings()
+                setState { copy(isAuthorized = !token.isNullOrBlank()) }
+            }
+        }
         load()
     }
 
@@ -51,6 +62,10 @@ class DetailsViewModel @AssistedInject internal constructor(
             is DetailsState.Event.SourceSelected -> selectSource(event.sourceId)
 
             is DetailsState.Event.EpisodeSelected -> openEpisode(event.episode)
+
+            DetailsState.Event.FavoriteClicked -> toggleFavorite()
+
+            is DetailsState.Event.BookmarkStatusSelected -> applyBookmarkStatus(event.status)
 
             DetailsState.Event.Retry -> load()
         }
@@ -72,6 +87,9 @@ class DetailsViewModel @AssistedInject internal constructor(
                                 it.isBlank() || it.contains("no_image")
                             } ?: posterUrl,
                             title = release.titleRu.ifBlank { title ?: release.titleOriginal },
+                            isFavorite = release.isFavorite,
+                            favoritesCount = release.favoritesCount,
+                            bookmarkStatus = BookmarkStatus.fromType(release.profileListStatus),
                             isLoading = false,
                             error = null,
                         )
@@ -174,6 +192,75 @@ class DetailsViewModel @AssistedInject internal constructor(
                 startPosition = episode.position,
                 sourceName = sourceName,
             )
+        }
+    }
+
+    /**
+     * Переключение избранного: состояние меняется сразу (оптимистично), а при ошибке
+     * откатывается и показывается уведомление. Флаг `isLibraryUpdating` не даёт отправить
+     * два запроса подряд при быстрых нажатиях.
+     */
+    private fun toggleFavorite() {
+        val state = currentState
+        if (!state.isAuthorized || state.isLibraryUpdating) return
+        val target = !state.isFavorite
+        setState {
+            copy(
+                isFavorite = target,
+                favoritesCount = (favoritesCount + if (target) 1 else -1).coerceAtLeast(0),
+                isLibraryUpdating = true,
+            )
+        }
+        viewModelScope.launch {
+            try {
+                val api = apiProvider.get()
+                if (target) api.addFavorite(releaseId) else api.removeFavorite(releaseId)
+                setState { copy(isLibraryUpdating = false) }
+                setEffect(DetailsState.Effect.FavoriteChanged(target))
+            } catch (t: Throwable) {
+                setState {
+                    copy(
+                        isFavorite = !target,
+                        favoritesCount = (favoritesCount + if (target) -1 else 1).coerceAtLeast(0),
+                        isLibraryUpdating = false,
+                    )
+                }
+                setEffect(DetailsState.Effect.LibraryActionFailed)
+            }
+        }
+    }
+
+    /**
+     * Смена списка закладок. Списки в Anixart взаимоисключающие, поэтому новый статус
+     * всегда применяется через «убрать из текущего → добавить в новый».
+     */
+    private fun applyBookmarkStatus(status: BookmarkStatus) {
+        val state = currentState
+        if (!state.isAuthorized || state.isLibraryUpdating) return
+        if (state.bookmarkStatus == status) return
+        val previous = state.bookmarkStatus
+        setState { copy(bookmarkStatus = status, isLibraryUpdating = true) }
+        viewModelScope.launch {
+            try {
+                val api = apiProvider.get()
+                if (previous != BookmarkStatus.NONE) {
+                    api.removeFromProfileList(type = previous.type, releaseId = releaseId)
+                }
+                if (status != BookmarkStatus.NONE) {
+                    api.addToProfileList(type = status.type, releaseId = releaseId)
+                }
+                setState { copy(isLibraryUpdating = false) }
+                setEffect(
+                    if (status == BookmarkStatus.NONE) {
+                        DetailsState.Effect.BookmarkRemoved
+                    } else {
+                        DetailsState.Effect.BookmarkAdded(status)
+                    },
+                )
+            } catch (t: Throwable) {
+                setState { copy(bookmarkStatus = previous, isLibraryUpdating = false) }
+                setEffect(DetailsState.Effect.LibraryActionFailed)
+            }
         }
     }
 }

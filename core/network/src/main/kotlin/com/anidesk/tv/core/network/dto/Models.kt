@@ -62,6 +62,7 @@ data class Release(
     @SerialName("last_view_episode_type_name") val lastViewEpisodeTypeName: String = "",
     @SerialName("is_viewed") val isViewed: Boolean = false,
     @SerialName("is_favorite") val isFavorite: Boolean = false,
+    @SerialName("favorites_count") val favoritesCount: Int = 0,
     @SerialName("related_releases") val relatedReleases: List<RelatedRelease> = emptyList(),
 )
 

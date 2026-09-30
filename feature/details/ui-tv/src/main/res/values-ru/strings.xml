@@ -12,4 +12,17 @@
     <string name="details_no_episodes" translatable="false">Серии недоступны — выберите озвучку и источник</string>
     <string name="details_episode_label" translatable="false">%1$d. %2$s</string>
     <string name="details_watched_dot" translatable="false">просмотрено</string>
+    <string name="details_favorites_action" translatable="false">Избранное</string>
+    <string name="details_bookmarks_section" translatable="false">В закладки</string>
+    <string name="details_bookmark_none" translatable="false">Без закладки</string>
+    <string name="details_bookmark_watching" translatable="false">Смотрю</string>
+    <string name="details_bookmark_planned" translatable="false">В планах</string>
+    <string name="details_bookmark_completed" translatable="false">Просмотрено</string>
+    <string name="details_bookmark_on_hold" translatable="false">Отложено</string>
+    <string name="details_bookmark_dropped" translatable="false">Брошено</string>
+    <string name="details_bookmark_added" translatable="false">Добавлено в «%1$s»</string>
+    <string name="details_bookmark_removed" translatable="false">Убрано из закладок</string>
+    <string name="details_favorite_added" translatable="false">Добавлено в избранное</string>
+    <string name="details_favorite_removed" translatable="false">Убрано из избранного</string>
+    <string name="details_library_action_failed" translatable="false">Не удалось изменить список</string>
 </resources>

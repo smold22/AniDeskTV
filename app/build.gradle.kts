@@ -85,6 +85,10 @@ dependencies {
     implementation(project(":feature:bookmarks:presentation"))
     implementation(project(":feature:bookmarks:ui-tv"))
 
+    implementation(project(":feature:favorites:api"))
+    implementation(project(":feature:favorites:presentation"))
+    implementation(project(":feature:favorites:ui-tv"))
+
     implementation(project(":feature:schedule:api"))
     implementation(project(":feature:schedule:domain"))
     implementation(project(":feature:schedule:data"))

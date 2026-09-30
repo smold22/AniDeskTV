@@ -28,6 +28,9 @@ class SettingsViewModel @Inject internal constructor(
             is SettingsState.Event.PosterCardSizeSelected ->
                 viewModelScope.launch { settingsStore.setPosterCardSize(event.size) }
 
+            is SettingsState.Event.ThemeModeSelected ->
+                viewModelScope.launch { settingsStore.setThemeMode(event.mode) }
+
             is SettingsState.Event.ApiEndpointSelected ->
                 viewModelScope.launch {
                     settingsStore.setApiEndpoint(event.endpoint)
@@ -63,6 +66,7 @@ class SettingsViewModel @Inject internal constructor(
                     copy(
                         posterQuality = snapshot.posterQuality,
                         posterCardSize = snapshot.posterCardSize,
+                        themeMode = snapshot.themeMode,
                     )
                 }
             }

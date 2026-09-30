@@ -77,6 +77,10 @@ include(":feature:bookmarks:api")
 include(":feature:bookmarks:presentation")
 include(":feature:bookmarks:ui-tv")
 
+include(":feature:favorites:api")
+include(":feature:favorites:presentation")
+include(":feature:favorites:ui-tv")
+
 include(":feature:schedule:api")
 include(":feature:schedule:domain")
 include(":feature:schedule:data")

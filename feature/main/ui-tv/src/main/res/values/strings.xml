@@ -6,5 +6,6 @@
     <string name="main_tab_top">Топ</string>
     <string name="main_tab_genres">Жанры</string>
     <string name="main_tab_bookmarks">Закладки</string>
+    <string name="main_tab_favorites">Избранное</string>
     <string name="main_settings_content_description">Настройки</string>
 </resources>

@@ -35,6 +35,7 @@ import com.anidesk.tv.core.designsystem.locals.LocalPreferredContentFocusRequest
 import com.anidesk.tv.core.designsystem.tv.TvChip
 import com.anidesk.tv.core.model.settings.PosterCardSize
 import com.anidesk.tv.core.model.settings.PosterQuality
+import com.anidesk.tv.core.model.settings.ThemeMode
 import com.anidesk.tv.core.preferences.settings.SettingsStore
 import com.anidesk.tvfeature.settings.uitv.R
 import kotlinx.coroutines.flow.Flow
@@ -71,6 +72,18 @@ fun SettingsTvScreen(
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
             )
+        }
+
+        item {
+            SettingsSection(title = stringResource(R.string.settings_theme)) {
+                ThemeMode.entries.forEach { mode ->
+                    TvChip(
+                        label = themeLabel(mode),
+                        selected = state.themeMode == mode,
+                        onClick = { onEvent(SettingsState.Event.ThemeModeSelected(mode)) },
+                    )
+                }
+            }
         }
 
         item {
@@ -276,5 +289,13 @@ private fun sizeLabel(size: PosterCardSize): String = stringResource(
         PosterCardSize.COMPACT -> R.string.settings_poster_size_compact
         PosterCardSize.STANDARD -> R.string.settings_poster_size_standard
         PosterCardSize.LARGE -> R.string.settings_poster_size_large
+    },
+)
+
+@Composable
+private fun themeLabel(mode: ThemeMode): String = stringResource(
+    when (mode) {
+        ThemeMode.LIGHT -> R.string.settings_theme_light
+        ThemeMode.DARK -> R.string.settings_theme_dark
     },
 )
