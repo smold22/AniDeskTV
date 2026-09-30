@@ -31,6 +31,8 @@ data class Release(
     @SerialName("description") val description: String = "",
     @SerialName("note") val note: String? = null,
     @SerialName("related") val related: RelatedRelease? = null,
+    /** Сколько всего релизов в связанной сущности. У самой `related` счётчик всегда 0. */
+    @SerialName("related_count") val relatedCount: Int = 0,
     @SerialName("category") val category: ReleaseCategory? = null,
     @SerialName("status") val status: ReleaseStatus? = null,
     @SerialName("rating") val rating: Double = 0.0,

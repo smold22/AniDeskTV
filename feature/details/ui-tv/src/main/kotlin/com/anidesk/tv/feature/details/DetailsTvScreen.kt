@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +57,7 @@ import com.anidesk.tv.core.designsystem.tv.TvActionButton
 import com.anidesk.tv.core.designsystem.tv.TvChip
 import com.anidesk.tv.core.designsystem.tv.TvLoadingScreen
 import com.anidesk.tv.core.designsystem.tv.TvStateContent
+import com.anidesk.tv.core.designsystem.tv.TvTitleCard
 import com.anidesk.tv.core.model.release.BookmarkStatus
 import com.anidesk.tv.core.network.dto.Episode
 import com.anidesk.tv.core.network.dto.Release
@@ -139,6 +142,17 @@ fun DetailsTvScreen(
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
+                }
+            }
+
+            // Связанные релизы идут до выбора озвучки: список серий бывает на сотни строк,
+            // и внизу раздел «Ещё» просто не доехать.
+            if (state.relatedReleases.isNotEmpty() || state.relatedError != null) {
+                item(key = "related") {
+                    RelatedReleasesRow(
+                        state = state,
+                        onEvent = onEvent,
+                    )
                 }
             }
 
@@ -324,6 +338,67 @@ private fun LibraryRow(
                     label = bookmarkStatusLabel(status),
                     selected = state.bookmarkStatus == status,
                     onClick = { onEvent(DetailsState.Event.BookmarkStatusSelected(status)) },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Ряд «Связанные релизы»: горизонтальные карточки релизов из связанной сущности тайтла
+ * (сиквел, предыстория). Подгрузка страниц — явной кнопкой в заголовке раздела, а не
+ * автоскроллом: в горизонтальном ряду автогрузка срабатывает на первом же свайпе мимо края.
+ */
+@Composable
+private fun RelatedReleasesRow(
+    state: DetailsState.State,
+    onEvent: (DetailsState.Event) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val related = state.relatedReleases
+    val hasMoreAction = state.hasMoreRelated || state.isRelatedLoading || state.relatedError != null
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.details_related_section),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (hasMoreAction) {
+                TvActionButton(
+                    text = when {
+                        state.isRelatedLoading -> stringResource(R.string.details_related_loading)
+                        state.relatedError != null -> stringResource(R.string.details_related_retry)
+                        else -> stringResource(R.string.details_related_more)
+                    },
+                    icon = state.relatedError?.let { Icons.Filled.Refresh },
+                    onClick = { onEvent(DetailsState.Event.LoadMoreRelated) },
+                )
+            }
+        }
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(TvCardSpacing.Horizontal),
+        ) {
+            items(
+                count = related.size,
+                key = { index -> related[index].id },
+            ) { index ->
+                val release = related[index]
+                TvTitleCard(
+                    title = release.titleRu.ifBlank { release.titleOriginal },
+                    posterUrl = release.posterUrl.ifBlank { null },
+                    onClick = { onEvent(DetailsState.Event.RelatedReleaseSelected(release)) },
+                    subtitle = listOfNotNull(release.year, release.category.ifBlank { null })
+                        .joinToString(" · "),
                 )
             }
         }

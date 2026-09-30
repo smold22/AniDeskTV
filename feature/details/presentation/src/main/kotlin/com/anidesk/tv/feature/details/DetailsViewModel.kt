@@ -1,14 +1,17 @@
 package com.anidesk.tv.feature.details
 
+import com.anidesk.tv.core.model.release.AnimeRelease
 import com.anidesk.tv.core.model.release.BookmarkStatus
 import com.anidesk.tv.core.model.release.ContinueWatchingEntry
 import com.anidesk.tv.core.mvi.BaseViewModel
 import com.anidesk.tv.core.network.di.AnixartApiProvider
 import com.anidesk.tv.core.network.dto.Episode
+import com.anidesk.tv.core.network.dto.Release
 import com.anidesk.tv.core.navigation.manager.INavigationManager
 import com.anidesk.tv.core.navigation.player.IPlayerLauncher
 import com.anidesk.tv.core.preferences.session.SessionStore
 import com.anidesk.tv.core.preferences.settings.SettingsStore
+import com.anidesk.tv.feature.details.utils.toAnimeRelease
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -16,6 +19,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 
 private const val LOAD_ERROR_MESSAGE = "Не удалось загрузить тайтл"
+private const val RELATED_ERROR_MESSAGE = "Не удалось загрузить связанные релизы"
+
+/** Страницы related в API 0-индексированные, а `AnixartApi.relatedReleases` ждёт 1-индексацию. */
+private const val FIRST_RELATED_PAGE = 1
 
 @HiltViewModel(assistedFactory = DetailsViewModel.Factory::class)
 class DetailsViewModel @AssistedInject internal constructor(
@@ -27,6 +34,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val sessionStore: SessionStore,
     private val playerLauncher: IPlayerLauncher,
     private val nav: INavigationManager,
+    private val detailsNavigator: IDetailsNavigator,
 ) : BaseViewModel<DetailsState.State, DetailsState.Event, DetailsState.Effect>() {
 
     @AssistedFactory
@@ -67,6 +75,10 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             is DetailsState.Event.BookmarkStatusSelected -> applyBookmarkStatus(event.status)
 
+            DetailsState.Event.LoadMoreRelated -> loadMoreRelated()
+
+            is DetailsState.Event.RelatedReleaseSelected -> openRelatedRelease(event.release)
+
             DetailsState.Event.Retry -> load()
         }
     }
@@ -95,12 +107,95 @@ class DetailsViewModel @AssistedInject internal constructor(
                         )
                     }
                     loadDubbers()
+                    // Связанные релизы — второстепенный блок, поэтому грузим его отдельной
+                    // корутиной: медленный ответ не должен задерживать озвучки и серии.
+                    loadRelatedReleases(release)
                 }
             } catch (t: Throwable) {
                 setState { copy(isLoading = false, error = t.message ?: LOAD_ERROR_MESSAGE) }
             }
         }
     }
+
+    /**
+     * Первая страница связанных релизов. Связанная сущность приходит полем `related`
+     * у самого тайтла, а её релизы — отдельным запросом `/related/{id}/{page}`.
+     * Признак «есть ли что показывать» — [Release.relatedCount]: счётчик `release_count`
+     * внутри самой `related` Anixart всегда отдаёт 0.
+     * Свой тайтл из выдачи выкидываем, иначе он будет висеть в «Связанных релизах» сам у себя.
+     */
+    private fun loadRelatedReleases(release: Release) {
+        val related = release.related
+        if (related == null || release.relatedCount <= 0) {
+            setState { copy(relatedReleases = emptyList(), hasMoreRelated = false, relatedError = null) }
+            return
+        }
+        setState { copy(isRelatedLoading = true, relatedError = null) }
+        viewModelScope.launch {
+            try {
+                val response = apiProvider.get().relatedReleases(
+                    relatedId = related.id,
+                    page = FIRST_RELATED_PAGE,
+                )
+                setState {
+                    copy(
+                        relatedReleases = response.content.toRelatedReleases(),
+                        relatedPage = FIRST_RELATED_PAGE,
+                        // Страниц у related сколько — API не сообщает (total_page_count = 0),
+                        // поэтому конец списка определяется пустым ответом.
+                        hasMoreRelated = response.content.isNotEmpty(),
+                        isRelatedLoading = false,
+                        relatedError = null,
+                    )
+                }
+            } catch (t: Throwable) {
+                setState { copy(isRelatedLoading = false, relatedError = RELATED_ERROR_MESSAGE) }
+            }
+        }
+    }
+
+    /**
+     * Подгрузка следующей страницы: [DetailsState.State.relatedPage] хранит 1-индексированный
+     * номер последней удачной страницы, поэтому следующая — `relatedPage + 1`.
+     */
+    private fun loadMoreRelated() {
+        val snapshot = currentState
+        val relatedId = snapshot.release?.related?.id ?: return
+        if (snapshot.isRelatedLoading || !snapshot.hasMoreRelated) return
+        val nextPage = snapshot.relatedPage + 1
+        setState { copy(isRelatedLoading = true, relatedError = null) }
+        viewModelScope.launch {
+            try {
+                val response = apiProvider.get().relatedReleases(
+                    relatedId = relatedId,
+                    page = nextPage,
+                )
+                setState {
+                    copy(
+                        relatedReleases = relatedReleases + response.content.toRelatedReleases(),
+                        relatedPage = nextPage,
+                        hasMoreRelated = response.content.isNotEmpty(),
+                        isRelatedLoading = false,
+                        relatedError = null,
+                    )
+                }
+            } catch (t: Throwable) {
+                setState { copy(isRelatedLoading = false, relatedError = RELATED_ERROR_MESSAGE) }
+            }
+        }
+    }
+
+    private fun openRelatedRelease(release: AnimeRelease) {
+        nav.navigate(
+            detailsNavigator.getDetailsDest(
+                releaseId = release.id,
+                posterUrl = release.posterUrl,
+                title = release.titleRu.ifBlank { release.titleOriginal },
+            ),
+        )
+    }
+
+    private fun List<Release>.toRelatedReleases() = map { it.toAnimeRelease() }.filter { it.id != releaseId }
 
     private suspend fun loadDubbers() {
         try {

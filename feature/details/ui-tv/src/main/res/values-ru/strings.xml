@@ -25,4 +25,8 @@
     <string name="details_favorite_added" translatable="false">Добавлено в избранное</string>
     <string name="details_favorite_removed" translatable="false">Убрано из избранного</string>
     <string name="details_library_action_failed" translatable="false">Не удалось изменить список</string>
+    <string name="details_related_section" translatable="false">Связанные релизы</string>
+    <string name="details_related_more" translatable="false">Ещё</string>
+    <string name="details_related_loading" translatable="false">Загрузка…</string>
+    <string name="details_related_retry" translatable="false">Повторить</string>
 </resources>
