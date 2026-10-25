@@ -70,8 +70,7 @@ class PlayerFragment : BasePlayerFragment() {
             playerGlue?.apply {
                 title = it.title
                 subtitle = it.subtitle
-                seekTo(it.seek)
-                preparePlayer(it.url)
+                preparePlayer(it.url, it.seek)
             }
         }
 

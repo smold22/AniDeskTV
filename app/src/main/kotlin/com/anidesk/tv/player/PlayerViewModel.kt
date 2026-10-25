@@ -50,6 +50,9 @@ class PlayerViewModel(
     private var autoPlayEnabled = false
     private var initialPendingResume = false
     private var pendingResumeMs: Long = -1L
+    // От playEpisode до готовности нового видео плеер отдаёт позицию прошлой серии:
+    // сохранённая под новой серией, она запускала ту с конца.
+    private var switchingEpisode = false
 
     private fun positionKey(episode: Episode): String =
         "${argExtra.releaseId}:${currentSource?.id ?: 0}:${episode.position}"
@@ -195,6 +198,7 @@ class PlayerViewModel(
 
     fun onPrepare(duration: Long) {
         val episode = currentEpisode ?: return
+        switchingEpisode = false
         viewModelScope.launch {
             val saved = settingsStore.getPlaybackPosition(positionKey(episode))
             if (initialPendingResume) {
@@ -231,7 +235,7 @@ class PlayerViewModel(
 
     fun savePosition(position: Long) {
         val episode = currentEpisode ?: return
-        if (position < 0) {
+        if (position < 0 || switchingEpisode) {
             return
         }
         viewModelScope.launch {
@@ -247,6 +251,7 @@ class PlayerViewModel(
 
     private fun playEpisode(episode: Episode, force: Boolean = false, resumePrompt: Boolean = false) {
         currentEpisode = episode
+        switchingEpisode = true
         viewModelScope.launch {
             currentLinks = SourceParsers.parse(episode.url, currentSource?.name.orEmpty())
             if (currentLinks.isEmpty()) {

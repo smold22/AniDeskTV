@@ -155,8 +155,12 @@ open class BasePlayerFragment : VideoSupportFragment() {
         player = null
     }
 
-    protected fun preparePlayer(url: String) {
-        player?.setMediaItem(MediaItem.fromUri(Uri.parse(url)), false)
+    /**
+     * Позиция старта передаётся вместе с видео: отдельный seekTo по плееру без медиа
+     * переводит его в STATE_ENDED, и это читалось как конец серии.
+     */
+    protected fun preparePlayer(url: String, startPositionMs: Long) {
+        player?.setMediaItem(MediaItem.fromUri(Uri.parse(url)), startPositionMs)
         player?.prepare()
     }
 
